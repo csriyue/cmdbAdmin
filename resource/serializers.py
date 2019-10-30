@@ -10,7 +10,6 @@ class IdcSerializer(serializers.ModelSerializer):
 
 
 class CabinetSerializer(serializers.ModelSerializer):
-    idc = IdcSerializer()
     class Meta:
         model = Cabinet
         fields = '__all__'
@@ -23,15 +22,9 @@ class ManufacturerSerializer(serializers.ModelSerializer):
 
 
 class ProductModelSerializer(serializers.ModelSerializer):
-    vendor = ManufacturerSerializer()
     class Meta:
         model = ProductModel
         fields = '__all__'
-
-
-
-
-
 
 
 

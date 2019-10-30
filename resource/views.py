@@ -18,18 +18,40 @@ class IdcViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # zapi = ZabbixAPI("http://192.168.8.27/zabbix/api_jsonrpc.php")
+        # zapi.login("Admin", "zabbix")
+        # groupname = request.data.get("name",)
+        # ret = zapi.hostgroup.create(name=groupname)
+        # groupid = ret.get("groupids")[0]
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        zapi = ZabbixAPI("http://192.168.8.27/zabbix/api_jsonrpc.php")
-        zapi.login("Admin", "zabbix")
-        groupname = request.data.get("name",)
-        ret = zapi.hostgroup.create(name=groupname)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ServerViewSet(viewsets.ModelViewSet):
     queryset = Server.objects.all()
     serializer_class = ServerSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        zapi = ZabbixAPI("http://192.168.8.27/zabbix/api_jsonrpc.php")
+        zapi.login("Admin", "zabbix")
+        host = 'test123'
+        ip = request.data.get("manage_ip",)
+        groupid = request.data.get("idc",)
+        ret = zapi.host.create(host=host, interfaces=[
+            {
+                "type": 1,
+                "main": 1,
+                "useip": 1,
+                "ip": ip,
+                "dns": "",
+                "port": "10050"
+            }], groups=groupid)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class CabinetViewSet(viewsets.ModelViewSet):

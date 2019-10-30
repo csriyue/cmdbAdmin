@@ -8,6 +8,7 @@ class Idc(models.Model):
     address = models.CharField("机房地址", max_length=255, null=True, blank=True, help_text="机房地址")
     leader = models.CharField("机房负责人", max_length=25, null=True, blank=True, help_text="机房负责人")
     remark = models.CharField("备注说明", max_length=255, null=True, blank=True, help_text="备注说明")
+    zbgroupid = models.IntegerField("zabbix群组id", null=True, blank=True, help_text="zabbix群组id")
 
     class Meta:
         verbose_name = "机房信息"
@@ -76,6 +77,7 @@ class Server(models.Model):
     uuid            = models.UUIDField("UUID", max_length=100, auto_created=True, default=uuid.uuid4, editable=False, help_text="UUID")
     # sn              = models.CharField("SN", max_length=40, db_index=True, null=True, help_text="SN")
     # server_type     = models.IntegerField("机器类型", db_index=True, default=0, help_text="机器类型")
+    zbhostid = models.IntegerField("zabbix主机id", null=True, blank=True, help_text="zabbix主机id")
     """
         机器类型，0：vm, 1:物理机, 2:宿主机
     """
