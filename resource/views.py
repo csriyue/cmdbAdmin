@@ -15,33 +15,28 @@ class IdcViewSet(viewsets.ModelViewSet):
     queryset = Idc.objects.all()
     serializer_class = IdcSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        # zapi = ZabbixAPI("http://192.168.8.27/zabbix/api_jsonrpc.php")
-        # zapi.login("Admin", "zabbix")
-        # groupname = request.data.get("name",)
-        # ret = zapi.hostgroup.create(name=groupname)
-        # groupid = ret.get("groupids")[0]
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    def perform_create(self, serializer):
+        idc = serializer.save()
+        zapi = ZabbixAPI("http://192.168.8.27/zabbix/api_jsonrpc.php")
+        zapi.login("Admin", "zabbix")
+        groupname = idc.name
+        ret = zapi.hostgroup.create(name=groupname)
+        idc.zbgroupid = ret.get("groupids")[0]
+        idc.save()
 
 
 class ServerViewSet(viewsets.ModelViewSet):
     queryset = Server.objects.all()
     serializer_class = ServerSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
+    def perform_create(self, serializer):
+        server = serializer.save()
         zapi = ZabbixAPI("http://192.168.8.27/zabbix/api_jsonrpc.php")
         zapi.login("Admin", "zabbix")
-        host = 'test123'
-        ip = request.data.get("manage_ip",)
-        groupid = request.data.get("idc",)
+
+        host = str(server.uuid)
+        ip = server.manage_ip
+        groupid = server.idc.zbgroupid
         ret = zapi.host.create(host=host, interfaces=[
             {
                 "type": 1,
@@ -50,8 +45,9 @@ class ServerViewSet(viewsets.ModelViewSet):
                 "ip": ip,
                 "dns": "",
                 "port": "10050"
-            }], groups=groupid)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            }], groups=[{"groupid": groupid}])
+        server.zbhostid = ret.get("hostids")[0]
+        server.save()
 
 
 class CabinetViewSet(viewsets.ModelViewSet):

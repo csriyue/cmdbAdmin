@@ -13,7 +13,7 @@ class Idc(models.Model):
     class Meta:
         verbose_name = "机房信息"
         verbose_name_plural = verbose_name
-        db_table = 'resource_idc'
+        db_table = 'resources_idc'
 
     def __str__(self):
         return self.name
